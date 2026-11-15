@@ -46,21 +46,25 @@ object SearchEngine {
             val reasons = mutableListOf<String>()
 
             // 1. Date constraint
-            query.dateRange?.let { range ->
+                        // 1. Date constraint
+            val range = query.dateRange
+            if (range != null) {
                 if (!range.contains(effectiveDay(item))) continue
                 reasons += "Date matches ${range.label}"
             }
 
             // 2. Price constraint (only ₹ prices are compared)
-            if (query.maxPrice != null || query.minPrice != null) {
+            val maxPrice = query.maxPrice
+            val minPrice = query.minPrice
+            if (maxPrice != null || minPrice != null) {
                 val value = rupeeValue(item.price) ?: continue
-                query.maxPrice?.let {
-                    if (value > it) continue
-                    reasons += "Price ${item.price} is under ${QueryParser.formatPrice(it)}"
+                if (maxPrice != null) {
+                    if (value > maxPrice) continue
+                    reasons += "Price ${item.price} is under ${QueryParser.formatPrice(maxPrice)}"
                 }
-                query.minPrice?.let {
-                    if (value < it) continue
-                    reasons += "Price ${item.price} is over ${QueryParser.formatPrice(it)}"
+                if (minPrice != null) {
+                    if (value < minPrice) continue
+                    reasons += "Price ${item.price} is over ${QueryParser.formatPrice(minPrice)}"
                 }
             }
 
