@@ -24,6 +24,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.screenshotbrain.ui.library.LibraryScreen
 
 private enum class Destination(
     val route: String,
@@ -72,7 +73,10 @@ fun ScreenshotBrainApp() {
         ) {
             Destination.values().forEach { destination ->
                 composable(destination.route) {
-                    PlaceholderScreen(destination.label)
+                    when (destination) {
+                        Destination.Library -> LibraryScreen()
+                        else -> PlaceholderScreen(destination.label)
+                    }
                 }
             }
         }
