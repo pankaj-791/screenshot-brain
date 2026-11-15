@@ -3,6 +3,7 @@ package com.screenshotbrain.ui.library
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,12 +36,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.screenshotbrain.database.ScreenshotEntity
 
 @Composable
 fun LibraryScreen(viewModel: LibraryViewModel = viewModel()) {
@@ -107,16 +112,61 @@ fun LibraryScreen(viewModel: LibraryViewModel = viewModel()) {
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(screenshots, key = { it.id }) { screenshot ->
-                        AsyncImage(
-                            model = screenshot.uri,
-                            contentDescription = screenshot.fileName,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(0.6f)
-                                .clip(RoundedCornerShape(12.dp))
-                        )
+                        ScreenshotCard(screenshot)
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ScreenshotCard(screenshot: ScreenshotEntity) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(0.6f)
+            .clip(RoundedCornerShape(12.dp))
+    ) {
+        AsyncImage(
+            model = screenshot.uri,
+            contentDescription = screenshot.fileName,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .fillMaxWidth()
+                .background(Color.Black.copy(alpha = 0.6f))
+                .padding(horizontal = 8.dp, vertical = 6.dp)
+        ) {
+            if (screenshot.ocrStatus == 0) {
+                Text(
+                    text = "Reading text…",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White
+                )
+            } else {
+                Text(
+                    text = screenshot.title ?: screenshot.fileName,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                val details = listOfNotNull(screenshot.category, screenshot.price)
+                    .joinToString(" · ")
+                if (details.isNotEmpty()) {
+                    Text(
+                        text = details,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.White.copy(alpha = 0.85f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
         }
