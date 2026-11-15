@@ -5,8 +5,13 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.MediaStore
 import android.provider.OpenableColumns
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.screenshotbrain.database.ScreenshotDao
 import com.screenshotbrain.database.ScreenshotEntity
+import com.screenshotbrain.workers.OcrWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -29,9 +34,29 @@ class ScreenshotRepository(
                 importedAt = System.currentTimeMillis(),
                 takenAt = readString(uri, MediaStore.Images.ImageColumns.DATE_TAKEN)?.toLongOrNull()
             )
-            if (dao.insert(entity) != -1L) added++
+            val rowId = dao.insert(entity)
+            if (rowId != -1L) {
+                added++
+                enqueueOcr(rowId)
+            }
         }
         added
+    }
+
+    /** Queues OCR for every screenshot that is still waiting (e.g. imported before OCR existed). */
+    suspend fun processPending() = withContext(Dispatchers.IO) {
+        for (id in dao.getPendingIds()) {
+            enqueueOcr(id)
+        }
+    }
+
+    private fun enqueueOcr(id: Long) {
+        val request = OneTimeWorkRequestBuilder<OcrWorker>()
+            .setInputData(workDataOf(OcrWorker.KEY_ID to id))
+            .build()
+        // KEEP: if a job for this screenshot already exists, do not queue another.
+        WorkManager.getInstance(context)
+            .enqueueUniqueWork("ocr_$id", ExistingWorkPolicy.KEEP, request)
     }
 
     private fun tryKeepAccess(uri: Uri) {
