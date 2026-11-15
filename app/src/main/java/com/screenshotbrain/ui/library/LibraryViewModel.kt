@@ -64,6 +64,7 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             try {
                 repository.processPending()
+                repository.refreshPrices()
             } catch (e: Exception) {
                 // Not fatal: pending screenshots will be retried next time.
             }
