@@ -15,6 +15,9 @@ interface ScreenshotDao {
     @Query("SELECT * FROM screenshots ORDER BY importedAt DESC")
     fun observeAll(): Flow<List<ScreenshotEntity>>
 
+    @Query("SELECT * FROM screenshots WHERE id = :id")
+    fun observeById(id: Long): Flow<ScreenshotEntity?>
+
     @Query("SELECT COUNT(*) FROM screenshots")
     suspend fun count(): Int
 
@@ -40,4 +43,13 @@ interface ScreenshotDao {
 
     @Query("UPDATE screenshots SET ocrStatus = :status WHERE id = :id")
     suspend fun setOcrStatus(id: Long, status: Int)
+
+    @Query("UPDATE screenshots SET isFavourite = :favourite WHERE id = :id")
+    suspend fun setFavourite(id: Long, favourite: Boolean)
+
+    @Query("UPDATE screenshots SET title = :title, category = :category, note = :note WHERE id = :id")
+    suspend fun updateDetails(id: Long, title: String?, category: String?, note: String?)
+
+    @Query("DELETE FROM screenshots WHERE id = :id")
+    suspend fun deleteById(id: Long)
 }
