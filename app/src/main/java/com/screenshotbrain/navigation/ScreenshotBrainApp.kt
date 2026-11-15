@@ -26,6 +26,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.screenshotbrain.ui.brain.BrainScreen
 import com.screenshotbrain.ui.detail.DetailScreen
 import com.screenshotbrain.ui.library.LibraryScreen
 
@@ -82,6 +83,9 @@ fun ScreenshotBrainApp() {
                 composable(destination.route) {
                     when (destination) {
                         Destination.Library -> LibraryScreen(
+                            onOpenScreenshot = { id -> navController.navigate("detail/$id") }
+                        )
+                        Destination.Brain -> BrainScreen(
                             onOpenScreenshot = { id -> navController.navigate("detail/$id") }
                         )
                         else -> PlaceholderScreen(destination.label)
