@@ -89,7 +89,7 @@ object ScreenshotAnalyzer {
             }
         }
 
-        val price = priceRegex.find(text)?.value?.trim()
+        val price = extractPrice(text)
         val title = makeTitle(text, bestCategory)
         val keywords = makeKeywords(lower, bestTerms)
 
@@ -101,6 +101,30 @@ object ScreenshotAnalyzer {
         )
     }
 
+       private val discountAfter = Regex(
+        "^\\s*(?:off|discount|cashback|saved|savings|less|extra)\\b",
+        RegexOption.IGNORE_CASE
+    )
+    private val discountBefore = Regex(
+        "(?:save|saved|extra|flat|cashback|discount|off)\\s*:?\\s*$",
+        RegexOption.IGNORE_CASE
+    )
+
+    /** First price that is not a discount amount (so "₹240 off" is skipped). */
+    fun extractPrice(text: String): String? {
+        for (match in priceRegex.findAll(text)) {
+            val after = text.substring(
+                match.range.last + 1,
+                minOf(text.length, match.range.last + 12)
+            )
+            val before = text.substring(maxOf(0, match.range.first - 12), match.range.first)
+            if (discountAfter.containsMatchIn(after) || discountBefore.containsMatchIn(before)) {
+                continue
+            }
+            return match.value.trim()
+        }
+        return null
+    }
     private fun makeTitle(text: String, category: String): String {
         val line = text.lines()
             .map { it.trim() }
