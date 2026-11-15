@@ -20,5 +20,7 @@ data class ScreenshotEntity(
     val category: String? = null,
     val keywords: String? = null,
     val price: String? = null,
-    @ColumnInfo(defaultValue = "0") val ocrStatus: Int = 0
+    @ColumnInfo(defaultValue = "0") val ocrStatus: Int = 0,
+    @ColumnInfo(defaultValue = "0") val isFavourite: Boolean = false,
+    val note: String? = null
 )
