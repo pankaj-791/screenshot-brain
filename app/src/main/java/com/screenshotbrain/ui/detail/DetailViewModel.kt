@@ -49,7 +49,8 @@ class DetailViewModel(
         }
     }
 
-    fun save(title: String, category: String, note: String) {
+                repository.updateDetails(id, title, category, note, price)
+                        repository.updateDetails(id, title, category, note)
         viewModelScope.launch {
             try {
                 repository.updateDetails(id, title, category, note)
