@@ -25,6 +25,19 @@ class ScreenshotRepository(
     fun observeAll(): Flow<List<ScreenshotEntity>> = dao.observeAll()
 
     fun observeById(id: Long): Flow<ScreenshotEntity?> = dao.observeById(id)
+        /** One-time: re-reads prices from already-saved text. Only the price column changes. */
+    suspend fun refreshPrices() {
+        withContext(Dispatchers.IO) {
+            val prefs = context.getSharedPreferences("brain_prefs", Context.MODE_PRIVATE)
+            if (!prefs.getBoolean("prices_v2", false)) {
+                for (item in dao.getAllWithText()) {
+                    val newPrice = ScreenshotAnalyzer.extractPrice(item.ocrText.orEmpty())
+                    if (newPrice != item.price) dao.updatePrice(item.id, newPrice)
+                }
+                prefs.edit().putBoolean("prices_v2", true).apply()
+            }
+        }
+    }
 
     /** Imports the picked images. Returns how many were new (duplicates are skipped). */
     suspend fun importUris(uris: List<Uri>): Int = withContext(Dispatchers.IO) {
