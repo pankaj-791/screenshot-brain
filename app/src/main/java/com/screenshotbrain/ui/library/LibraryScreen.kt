@@ -4,6 +4,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -66,7 +67,10 @@ import com.screenshotbrain.database.ScreenshotEntity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LibraryScreen(viewModel: LibraryViewModel = viewModel()) {
+fun LibraryScreen(
+    onOpenScreenshot: (Long) -> Unit,
+    viewModel: LibraryViewModel = viewModel()
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val filters by viewModel.filters.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
@@ -237,8 +241,9 @@ fun LibraryScreen(viewModel: LibraryViewModel = viewModel()) {
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(state.items, key = { it.id }) { screenshot ->
-                        ScreenshotCard(
+                                                ScreenshotCard(
                             screenshot = screenshot,
+                            onClick = { onOpenScreenshot(screenshot.id) },
                             onToggleFavourite = { viewModel.toggleFavourite(screenshot) }
                         )
                     }
@@ -251,6 +256,7 @@ fun LibraryScreen(viewModel: LibraryViewModel = viewModel()) {
 @Composable
 private fun ScreenshotCard(
     screenshot: ScreenshotEntity,
+    onClick: () -> Unit,
     onToggleFavourite: () -> Unit
 ) {
     Box(
@@ -258,6 +264,7 @@ private fun ScreenshotCard(
             .fillMaxWidth()
             .aspectRatio(0.6f)
             .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
     ) {
         AsyncImage(
             model = screenshot.uri,
