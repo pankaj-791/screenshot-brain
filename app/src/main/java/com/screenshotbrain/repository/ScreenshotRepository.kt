@@ -1,4 +1,5 @@
 package com.screenshotbrain.repository
+import com.screenshotbrain.ocr.ScreenshotAnalyzer
 
 import android.content.Context
 import android.content.Intent
