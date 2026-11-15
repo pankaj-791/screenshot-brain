@@ -59,4 +59,3 @@ interface ScreenshotDao {
     @Query("UPDATE screenshots SET price = :price WHERE id = :id")
     suspend fun updatePrice(id: Long, price: String?)
 }
-}
