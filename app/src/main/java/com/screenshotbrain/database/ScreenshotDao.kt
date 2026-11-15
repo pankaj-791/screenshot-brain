@@ -47,8 +47,8 @@ interface ScreenshotDao {
     @Query("UPDATE screenshots SET isFavourite = :favourite WHERE id = :id")
     suspend fun setFavourite(id: Long, favourite: Boolean)
 
-    @Query("UPDATE screenshots SET title = :title, category = :category, note = :note WHERE id = :id")
-    suspend fun updateDetails(id: Long, title: String?, category: String?, note: String?)
+    @Query("UPDATE screenshots SET title = :title, category = :category, note = :note, price = :price WHERE id = :id")
+    suspend fun updateDetails(id: Long, title: String?, category: String?, note: String?, price: String?)
 
     @Query("DELETE FROM screenshots WHERE id = :id")
     suspend fun deleteById(id: Long)
