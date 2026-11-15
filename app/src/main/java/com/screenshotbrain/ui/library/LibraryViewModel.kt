@@ -26,6 +26,17 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
     private val _message = MutableStateFlow<String?>(null)
     val message: StateFlow<String?> = _message
 
+    init {
+        // Read the text of any screenshots that haven't been processed yet.
+        viewModelScope.launch {
+            try {
+                repository.processPending()
+            } catch (e: Exception) {
+                // Not fatal: pending screenshots will be retried next time.
+            }
+        }
+    }
+
     fun importUris(uris: List<Uri>) {
         if (uris.isEmpty()) return
         viewModelScope.launch {
