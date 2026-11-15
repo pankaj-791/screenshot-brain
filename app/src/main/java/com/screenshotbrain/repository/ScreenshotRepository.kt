@@ -70,14 +70,22 @@ class ScreenshotRepository(
         dao.setFavourite(id, favourite)
     }
 
-    suspend fun updateDetails(id: Long, title: String?, category: String?, note: String?) =
-        withContext(Dispatchers.IO) {
-            dao.updateDetails(
-                id = id,
-                title = title?.trim()?.ifEmpty { null },
-                category = category?.trim()?.ifEmpty { null },
-                note = note?.trim()?.ifEmpty { null }
-            )
+        suspend fun updateDetails(
+        id: Long,
+        title: String?,
+        category: String?,
+        note: String?,
+        price: String?
+    ) = withContext(Dispatchers.IO) {
+        val cleanPrice = price?.trim()?.takeIf { p -> p.any { it.isDigit() } }
+            ?.let { p -> if (p.first().isDigit()) "₹$p" else p }
+        dao.updateDetails(
+            id = id,
+            title = title?.trim()?.ifEmpty { null },
+            category = category?.trim()?.ifEmpty { null },
+            note = note?.trim()?.ifEmpty { null },
+            price = cleanPrice
+        )
         }
 
     /** Removes the screenshot from the app. The original image in the gallery is not touched. */
