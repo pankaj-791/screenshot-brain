@@ -20,11 +20,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.screenshotbrain.ui.detail.DetailScreen
 import com.screenshotbrain.ui.library.LibraryScreen
+
+private const val DETAIL_ROUTE = "detail/{id}"
 
 private enum class Destination(
     val route: String,
@@ -46,22 +51,24 @@ fun ScreenshotBrainApp() {
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
-                Destination.values().forEach { destination ->
-                    NavigationBarItem(
-                        selected = currentRoute == destination.route,
-                        onClick = {
-                            navController.navigate(destination.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+            if (currentRoute != DETAIL_ROUTE) {
+                NavigationBar {
+                    Destination.values().forEach { destination ->
+                        NavigationBarItem(
+                            selected = currentRoute == destination.route,
+                            onClick = {
+                                navController.navigate(destination.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        icon = { Icon(destination.icon, contentDescription = destination.label) },
-                        label = { Text(destination.label) }
-                    )
+                            },
+                            icon = { Icon(destination.icon, contentDescription = destination.label) },
+                            label = { Text(destination.label) }
+                        )
+                    }
                 }
             }
         }
@@ -74,10 +81,18 @@ fun ScreenshotBrainApp() {
             Destination.values().forEach { destination ->
                 composable(destination.route) {
                     when (destination) {
-                        Destination.Library -> LibraryScreen()
+                        Destination.Library -> LibraryScreen(
+                            onOpenScreenshot = { id -> navController.navigate("detail/$id") }
+                        )
                         else -> PlaceholderScreen(destination.label)
                     }
                 }
+            }
+            composable(
+                route = DETAIL_ROUTE,
+                arguments = listOf(navArgument("id") { type = NavType.LongType })
+            ) {
+                DetailScreen(onBack = { navController.popBackStack() })
             }
         }
     }
