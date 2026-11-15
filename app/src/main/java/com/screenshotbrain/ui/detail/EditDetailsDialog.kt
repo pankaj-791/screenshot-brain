@@ -27,12 +27,14 @@ fun EditDetailsDialog(
     initialTitle: String,
     initialCategory: String,
     initialNote: String,
+    initialPrice: String,
     onDismiss: () -> Unit,
-    onSave: (title: String, category: String, note: String) -> Unit
+    onSave: (title: String, category: String, note: String, price: String) -> Unit
 ) {
     var title by rememberSaveable { mutableStateOf(initialTitle) }
     var category by rememberSaveable { mutableStateOf(initialCategory) }
     var note by rememberSaveable { mutableStateOf(initialNote) }
+    var price by rememberSaveable { mutableStateOf(initialPrice) }
     var menuOpen by rememberSaveable { mutableStateOf(false) }
 
     val categories = if (category in LibraryViewModel.CATEGORIES) {
@@ -81,6 +83,15 @@ fun EditDetailsDialog(
                 }
 
                 OutlinedTextField(
+                    value = price,
+                    onValueChange = { price = it },
+                    label = { Text("Price (optional)") },
+                    placeholder = { Text("e.g. 2159") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
                     value = note,
                     onValueChange = { note = it },
                     label = { Text("Personal note") },
@@ -90,7 +101,7 @@ fun EditDetailsDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = { onSave(title, category, note) }) { Text("Save") }
+            TextButton(onClick = { onSave(title, category, note, price) }) { Text("Save") }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Cancel") }
