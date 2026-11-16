@@ -28,6 +28,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.screenshotbrain.ui.brain.BrainRequests
 import com.screenshotbrain.ui.brain.BrainScreen
+import com.screenshotbrain.ui.collections.CollectionsScreen
 import com.screenshotbrain.ui.detail.DetailScreen
 import com.screenshotbrain.ui.home.HomeScreen
 import com.screenshotbrain.ui.library.LibraryRequests
@@ -104,6 +105,9 @@ fun ScreenshotBrainApp() {
                         )
                         Destination.Brain -> BrainScreen(
                             onOpenScreenshot = { id -> navController.navigate("detail/$id") }
+                        )
+                        Destination.Collections -> CollectionsScreen(
+                            onOpenCollection = { /* Opening a collection arrives in Stage 6B */ }
                         )
                         else -> PlaceholderScreen(destination.label)
                     }
