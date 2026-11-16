@@ -35,12 +35,14 @@ import com.screenshotbrain.ui.detail.DetailScreen
 import com.screenshotbrain.ui.home.HomeScreen
 import com.screenshotbrain.ui.library.LibraryRequests
 import com.screenshotbrain.ui.library.LibraryScreen
+import com.screenshotbrain.ui.reminders.RemindersScreen
 
 private const val DETAIL_ROUTE = "detail/{id}"
 private const val COLLECTION_ROUTE = "collection/{id}"
 private const val ADD_ROUTE = "collection/{id}/add"
+private const val REMINDERS_ROUTE = "reminders"
 
-private val fullScreenRoutes = setOf(DETAIL_ROUTE, COLLECTION_ROUTE, ADD_ROUTE)
+private val fullScreenRoutes = setOf(DETAIL_ROUTE, COLLECTION_ROUTE, ADD_ROUTE, REMINDERS_ROUTE)
 
 private enum class Destination(
     val route: String,
@@ -106,6 +108,7 @@ fun ScreenshotBrainApp() {
                                 goToTab(Destination.Library.route)
                             },
                             onOpenLibrary = { goToTab(Destination.Library.route) },
+                            onOpenReminders = { navController.navigate(REMINDERS_ROUTE) },
                             onOpenScreenshot = { id -> openScreenshot(id) }
                         )
                         Destination.Library -> LibraryScreen(
@@ -130,7 +133,7 @@ fun ScreenshotBrainApp() {
             composable(
                 route = COLLECTION_ROUTE,
                 arguments = listOf(navArgument("id") { type = NavType.LongType })
-            ) { entry ->
+            ) {
                 CollectionDetailScreen(
                     onBack = { navController.popBackStack() },
                     onAdd = { id -> navController.navigate("collection/$id/add") },
@@ -142,6 +145,12 @@ fun ScreenshotBrainApp() {
                 arguments = listOf(navArgument("id") { type = NavType.LongType })
             ) {
                 AddScreenshotsScreen(onBack = { navController.popBackStack() })
+            }
+            composable(REMINDERS_ROUTE) {
+                RemindersScreen(
+                    onBack = { navController.popBackStack() },
+                    onOpenScreenshot = { id -> openScreenshot(id) }
+                )
             }
         }
     }
