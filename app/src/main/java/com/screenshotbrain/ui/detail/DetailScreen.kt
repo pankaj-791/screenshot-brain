@@ -174,14 +174,15 @@ fun DetailScreen(onBack: () -> Unit, viewModel: DetailViewModel = viewModel()) {
     }
 
     if (showEdit && item != null) {
-        EditDetailsDialog(
+                EditDetailsDialog(
             initialTitle = item.title.orEmpty(),
             initialCategory = item.category ?: "Other",
             initialNote = item.note.orEmpty(),
+            initialPrice = item.price.orEmpty(),
             onDismiss = { showEdit = false },
-            onSave = { title, category, note ->
+            onSave = { title, category, note, price ->
                 showEdit = false
-                viewModel.save(title, category, note)
+                viewModel.save(title, category, note, price)
             }
         )
     }
