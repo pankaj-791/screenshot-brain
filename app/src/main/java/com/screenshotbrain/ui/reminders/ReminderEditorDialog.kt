@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,7 +27,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.screenshotbrain.domain.DateSuggestion
 import java.text.DateFormat
 import java.time.Instant
 import java.time.LocalDateTime
@@ -47,7 +50,8 @@ fun ReminderEditorDialog(
     initialNote: String,
     initialRemindAt: Long,
     onSave: (title: String, note: String, remindAt: Long) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    suggestions: List<DateSuggestion> = emptyList()
 ) {
     val context = LocalContext.current
     val zone = ZoneId.systemDefault()
@@ -89,6 +93,28 @@ fun ReminderEditorDialog(
                     }
                     OutlinedButton(onClick = { pickTime = true }, modifier = Modifier.weight(1f)) {
                         Text(DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(remindAt)))
+                    }
+                }
+                if (suggestions.isNotEmpty()) {
+                    Text(
+                        text = "Dates found in this screenshot. Check before using.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    suggestions.forEach { suggestion ->
+                        AssistChip(
+                            onClick = {
+                                remindAt = suggestion.date.atTime(dateTime.toLocalTime())
+                                    .atZone(zone).toInstant().toEpochMilli()
+                            },
+                            label = {
+                                Text(
+                                    text = "Use ${suggestion.label} (“${suggestion.source}”)",
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        )
                     }
                 }
                 if (inPast) {
