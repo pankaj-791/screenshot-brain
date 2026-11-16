@@ -28,6 +28,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.screenshotbrain.ui.brain.BrainRequests
 import com.screenshotbrain.ui.brain.BrainScreen
+import com.screenshotbrain.ui.collections.AddScreenshotsScreen
+import com.screenshotbrain.ui.collections.CollectionDetailScreen
 import com.screenshotbrain.ui.collections.CollectionsScreen
 import com.screenshotbrain.ui.detail.DetailScreen
 import com.screenshotbrain.ui.home.HomeScreen
@@ -35,6 +37,10 @@ import com.screenshotbrain.ui.library.LibraryRequests
 import com.screenshotbrain.ui.library.LibraryScreen
 
 private const val DETAIL_ROUTE = "detail/{id}"
+private const val COLLECTION_ROUTE = "collection/{id}"
+private const val ADD_ROUTE = "collection/{id}/add"
+
+private val fullScreenRoutes = setOf(DETAIL_ROUTE, COLLECTION_ROUTE, ADD_ROUTE)
 
 private enum class Destination(
     val route: String,
@@ -64,9 +70,11 @@ fun ScreenshotBrainApp() {
         }
     }
 
+    fun openScreenshot(id: Long) = navController.navigate("detail/$id")
+
     Scaffold(
         bottomBar = {
-            if (currentRoute != DETAIL_ROUTE) {
+            if (currentRoute !in fullScreenRoutes) {
                 NavigationBar {
                     Destination.values().forEach { destination ->
                         NavigationBarItem(
@@ -98,16 +106,16 @@ fun ScreenshotBrainApp() {
                                 goToTab(Destination.Library.route)
                             },
                             onOpenLibrary = { goToTab(Destination.Library.route) },
-                            onOpenScreenshot = { id -> navController.navigate("detail/$id") }
+                            onOpenScreenshot = { id -> openScreenshot(id) }
                         )
                         Destination.Library -> LibraryScreen(
-                            onOpenScreenshot = { id -> navController.navigate("detail/$id") }
+                            onOpenScreenshot = { id -> openScreenshot(id) }
                         )
                         Destination.Brain -> BrainScreen(
-                            onOpenScreenshot = { id -> navController.navigate("detail/$id") }
+                            onOpenScreenshot = { id -> openScreenshot(id) }
                         )
                         Destination.Collections -> CollectionsScreen(
-                            onOpenCollection = { /* Opening a collection arrives in Stage 6B */ }
+                            onOpenCollection = { id -> navController.navigate("collection/$id") }
                         )
                         else -> PlaceholderScreen(destination.label)
                     }
@@ -118,6 +126,22 @@ fun ScreenshotBrainApp() {
                 arguments = listOf(navArgument("id") { type = NavType.LongType })
             ) {
                 DetailScreen(onBack = { navController.popBackStack() })
+            }
+            composable(
+                route = COLLECTION_ROUTE,
+                arguments = listOf(navArgument("id") { type = NavType.LongType })
+            ) { entry ->
+                CollectionDetailScreen(
+                    onBack = { navController.popBackStack() },
+                    onAdd = { id -> navController.navigate("collection/$id/add") },
+                    onOpenScreenshot = { id -> openScreenshot(id) }
+                )
+            }
+            composable(
+                route = ADD_ROUTE,
+                arguments = listOf(navArgument("id") { type = NavType.LongType })
+            ) {
+                AddScreenshotsScreen(onBack = { navController.popBackStack() })
             }
         }
     }
