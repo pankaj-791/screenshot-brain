@@ -41,6 +41,18 @@ class BrainViewModel(application: Application) : AndroidViewModel(application) {
 
     private var nextId = 1L
 
+        init {
+        // Questions sent from the Home screen arrive here.
+        viewModelScope.launch {
+            BrainRequests.pending.collect { question ->
+                if (question != null) {
+                    BrainRequests.pending.value = null
+                    if (question.isNotBlank()) ask(question)
+                }
+            }
+        }
+        }
+
     fun ask(question: String) {
         val trimmed = question.trim()
         if (trimmed.isEmpty() || _isSearching.value) return
