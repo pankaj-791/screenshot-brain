@@ -19,6 +19,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.outlined.AddPhotoAlternate
+import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,16 +41,13 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import java.time.LocalDate
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 @Composable
 fun HomeScreen(
     onAsk: (String) -> Unit,
     onOpenCategory: (String) -> Unit,
     onOpenLibrary: () -> Unit,
+    onOpenReminders: () -> Unit,
     onOpenScreenshot: (Long) -> Unit,
     viewModel: HomeViewModel = viewModel()
 ) {
@@ -140,6 +138,17 @@ fun HomeScreen(
             }
 
             item {
+                QuickActionButton(
+                    label = "Reminders",
+                    icon = Icons.Outlined.Alarm,
+                    onClick = onOpenReminders,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                )
+            }
+
+            item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     SectionTitle("Smart categories")
                     CategoryGrid(counts = state.categoryCounts, onOpen = onOpenCategory)
@@ -179,34 +188,5 @@ fun HomeScreen(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun Greeting() {
-    val hour = remember { LocalTime.now().hour }
-    val greeting = when {
-        hour < 12 -> "Good morning"
-        hour < 17 -> "Good afternoon"
-        else -> "Good evening"
-    }
-    val date = remember {
-        LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.getDefault()))
-    }
-    Column(
-        modifier = Modifier.padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp)
-    ) {
-        Text(text = greeting, style = MaterialTheme.typography.headlineMedium)
-        Text(
-            text = date,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.primary
-        )
-        Text(
-            text = "Your screenshots, organized on your phone.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }
