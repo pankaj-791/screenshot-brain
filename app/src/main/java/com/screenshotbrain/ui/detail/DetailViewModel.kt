@@ -49,11 +49,10 @@ class DetailViewModel(
         }
     }
 
-                repository.updateDetails(id, title, category, note, price)
-                        repository.updateDetails(id, title, category, note)
+    fun save(title: String, category: String, note: String, price: String) {
         viewModelScope.launch {
             try {
-                repository.updateDetails(id, title, category, note)
+                repository.updateDetails(id, title, category, note, price)
                 _message.value = "Saved"
             } catch (e: Exception) {
                 _message.value = "Couldn't save changes."
