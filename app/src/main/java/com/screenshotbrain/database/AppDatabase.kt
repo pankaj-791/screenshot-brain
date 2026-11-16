@@ -11,9 +11,10 @@ import androidx.sqlite.db.SupportSQLiteDatabase
     entities = [
         ScreenshotEntity::class,
         CollectionEntity::class,
-        CollectionScreenshotEntity::class
+        CollectionScreenshotEntity::class,
+        ReminderEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -21,6 +22,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun screenshotDao(): ScreenshotDao
 
     abstract fun collectionDao(): CollectionDao
+
+    abstract fun reminderDao(): ReminderDao
 
     companion object {
         @Volatile
@@ -76,6 +79,30 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `reminders` (" +
+                        "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`title` TEXT NOT NULL, " +
+                        "`note` TEXT, " +
+                        "`screenshotId` INTEGER, " +
+                        "`remindAt` INTEGER NOT NULL, " +
+                        "`isDone` INTEGER NOT NULL DEFAULT 0, " +
+                        "FOREIGN KEY(`screenshotId`) REFERENCES `screenshots`(`id`) " +
+                        "ON UPDATE NO ACTION ON DELETE SET NULL)"
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_reminders_screenshotId` " +
+                        "ON `reminders` (`screenshotId`)"
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_reminders_remindAt` " +
+                        "ON `reminders` (`remindAt`)"
+                )
+            }
+        }
+
         fun get(context: Context): AppDatabase {
             return instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
@@ -83,7 +110,12 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "screenshot_brain.db"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                    .addMigrations(
+                        MIGRATION_1_2,
+                        MIGRATION_2_3,
+                        MIGRATION_3_4,
+                        MIGRATION_4_5
+                    )
                     .build()
                     .also { instance = it }
             }
