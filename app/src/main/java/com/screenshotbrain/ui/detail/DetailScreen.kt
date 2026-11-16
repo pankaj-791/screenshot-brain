@@ -77,6 +77,9 @@ fun DetailScreen(onBack: () -> Unit, viewModel: DetailViewModel = viewModel()) {
     val clipboard = LocalClipboardManager.current
     var showDelete by remember { mutableStateOf(false) }
     var showEdit by remember { mutableStateOf(false) }
+    var showCollections by remember { mutableStateOf(false) }
+    val allCollections by viewModel.allCollections.collectAsStateWithLifecycle()
+    val memberOf by viewModel.memberOf.collectAsStateWithLifecycle()
 
     LaunchedEffect(message) {
         message?.let {
@@ -101,6 +104,12 @@ fun DetailScreen(onBack: () -> Unit, viewModel: DetailViewModel = viewModel()) {
                 actions = {
                     if (item != null) {
                         IconButton(onClick = { viewModel.toggleFavourite(item) }) {
+                                                    IconButton(onClick = { showCollections = true }) {
+                            Icon(
+                                Icons.Outlined.CreateNewFolder,
+                                contentDescription = "Add to collection"
+                            )
+                                                    }
                             Icon(
                                 imageVector = if (item.isFavourite) {
                                     Icons.Outlined.Favorite
@@ -174,6 +183,14 @@ fun DetailScreen(onBack: () -> Unit, viewModel: DetailViewModel = viewModel()) {
         )
     }
 
+        if (showCollections) {
+        AddToCollectionDialog(
+            collections = allCollections,
+            memberOf = memberOf,
+            onToggle = { collectionId, add -> viewModel.setInCollection(collectionId, add) },
+            onDismiss = { showCollections = false }
+        )
+        }
     if (showEdit && item != null) {
                 EditDetailsDialog(
             initialTitle = item.title.orEmpty(),
