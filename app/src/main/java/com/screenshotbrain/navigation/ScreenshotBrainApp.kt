@@ -26,8 +26,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.screenshotbrain.ui.brain.BrainRequests
 import com.screenshotbrain.ui.brain.BrainScreen
 import com.screenshotbrain.ui.detail.DetailScreen
+import com.screenshotbrain.ui.home.HomeScreen
+import com.screenshotbrain.ui.library.LibraryRequests
 import com.screenshotbrain.ui.library.LibraryScreen
 
 private const val DETAIL_ROUTE = "detail/{id}"
@@ -50,6 +53,16 @@ fun ScreenshotBrainApp() {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
 
+    fun goToTab(route: String) {
+        navController.navigate(route) {
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
     Scaffold(
         bottomBar = {
             if (currentRoute != DETAIL_ROUTE) {
@@ -57,15 +70,7 @@ fun ScreenshotBrainApp() {
                     Destination.values().forEach { destination ->
                         NavigationBarItem(
                             selected = currentRoute == destination.route,
-                            onClick = {
-                                navController.navigate(destination.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
+                            onClick = { goToTab(destination.route) },
                             icon = { Icon(destination.icon, contentDescription = destination.label) },
                             label = { Text(destination.label) }
                         )
@@ -82,6 +87,18 @@ fun ScreenshotBrainApp() {
             Destination.values().forEach { destination ->
                 composable(destination.route) {
                     when (destination) {
+                        Destination.Home -> HomeScreen(
+                            onAsk = { question ->
+                                BrainRequests.pending.value = question
+                                goToTab(Destination.Brain.route)
+                            },
+                            onOpenCategory = { category ->
+                                LibraryRequests.pendingCategory.value = category
+                                goToTab(Destination.Library.route)
+                            },
+                            onOpenLibrary = { goToTab(Destination.Library.route) },
+                            onOpenScreenshot = { id -> navController.navigate("detail/$id") }
+                        )
                         Destination.Library -> LibraryScreen(
                             onOpenScreenshot = { id -> navController.navigate("detail/$id") }
                         )
