@@ -70,7 +70,19 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
             }
         }
     }
-
+    init {
+        // A category tapped on the Home screen arrives here.
+        viewModelScope.launch {
+            LibraryRequests.pendingCategory.collect { category ->
+                if (category != null) {
+                    LibraryRequests.pendingCategory.value = null
+                    _filters.update { LibraryFilters(category = category, newestFirst = it.newestFirst) }
+                }
+            }
+        }
+    }
+    
+    
     fun setQuery(query: String) = _filters.update { it.copy(query = query) }
 
     fun setCategory(category: String?) = _filters.update { it.copy(category = category) }
@@ -156,4 +168,9 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
             "Food", "Technology", "Documents", "Other"
         )
     }
+}
+
+/** Lets other screens (like Home) open the Library on a chosen category. */
+object LibraryRequests {
+    val pendingCategory = MutableStateFlow<String?>(null)
 }
