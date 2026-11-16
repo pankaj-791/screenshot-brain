@@ -119,3 +119,8 @@ class BrainViewModel(application: Application) : AndroidViewModel(application) {
         return BrainMessage(id, question, head + tail, parsed.describe(), results)
     }
 }
+
+/** Lets other screens (like Home) hand a question to AI Brain. */
+object BrainRequests {
+    val pending = MutableStateFlow<String?>(null)
+}
