@@ -25,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.CreateNewFolder
+import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Favorite
@@ -78,6 +79,7 @@ fun DetailScreen(onBack: () -> Unit, viewModel: DetailViewModel = viewModel()) {
     var showDelete by remember { mutableStateOf(false) }
     var showEdit by remember { mutableStateOf(false) }
     var showCollections by remember { mutableStateOf(false) }
+    var showReminder by remember { mutableStateOf(false) }
     val allCollections by viewModel.allCollections.collectAsStateWithLifecycle()
     val memberOf by viewModel.memberOf.collectAsStateWithLifecycle()
 
@@ -104,7 +106,13 @@ fun DetailScreen(onBack: () -> Unit, viewModel: DetailViewModel = viewModel()) {
                 actions = {
                     if (item != null) {
                         IconButton(onClick = { viewModel.toggleFavourite(item) }) {
-                                                    IconButton(onClick = { showCollections = true }) {
+                                                     IconButton(onClick = { showReminder = true }) {
+                            Icon(
+                                Icons.Outlined.Alarm,
+                                contentDescription = "Set reminder"
+                            )
+                                                     }                       
+                            IconButton(onClick = { showCollections = true }) {
                             Icon(
                                 Icons.Outlined.CreateNewFolder,
                                 contentDescription = "Add to collection"
