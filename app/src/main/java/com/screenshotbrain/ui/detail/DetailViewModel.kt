@@ -7,7 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.screenshotbrain.database.AppDatabase
 import com.screenshotbrain.database.CollectionWithInfo
 import com.screenshotbrain.database.ScreenshotEntity
+import com.screenshotbrain.notifications.NotificationHelper
 import com.screenshotbrain.repository.CollectionRepository
+import com.screenshotbrain.repository.ReminderRepository
 import com.screenshotbrain.repository.ScreenshotRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -27,6 +29,8 @@ class DetailViewModel(
     savedStateHandle: SavedStateHandle
 ) : AndroidViewModel(application) {
 
+    private val app = application
+
     private val id: Long = savedStateHandle["id"] ?: -1L
 
     private val database = AppDatabase.get(application)
@@ -37,6 +41,11 @@ class DetailViewModel(
     )
 
     private val collectionRepository = CollectionRepository(database.collectionDao())
+
+    private val reminderRepository = ReminderRepository(
+        context = application,
+        dao = database.reminderDao()
+    )
 
     val state: StateFlow<DetailState> = repository.observeById(id)
         .map { item -> if (item == null) DetailState.Missing else DetailState.Found(item) }
@@ -72,6 +81,27 @@ class DetailViewModel(
                 }
             } catch (e: Exception) {
                 _message.value = "Couldn't update the collection."
+            }
+        }
+    }
+
+    fun addReminder(title: String, note: String, remindAt: Long) {
+        if (remindAt <= System.currentTimeMillis()) {
+            _message.value = "Please choose a time in the future."
+            return
+        }
+        viewModelScope.launch {
+            try {
+                val newId = reminderRepository.create(title, note, id, remindAt)
+                _message.value = when {
+                    newId == null -> "Please enter a title."
+                    !NotificationHelper.canNotify(app) ->
+                        "Reminder saved, but notifications are off, so it can't alert you. " +
+                            "Turn them on in Android settings."
+                    else -> "Reminder set"
+                }
+            } catch (e: Exception) {
+                _message.value = "Couldn't save the reminder."
             }
         }
     }
