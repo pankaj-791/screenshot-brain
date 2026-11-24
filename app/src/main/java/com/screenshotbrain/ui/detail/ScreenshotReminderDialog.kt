@@ -16,6 +16,8 @@ import com.screenshotbrain.database.ScreenshotEntity
 import com.screenshotbrain.domain.DateSuggester
 import com.screenshotbrain.ui.reminders.ReminderEditorDialog
 import com.screenshotbrain.ui.reminders.defaultReminderTime
+import java.time.Instant
+import java.time.ZoneId
 
 @Composable
 fun ScreenshotReminderDialog(
@@ -24,7 +26,11 @@ fun ScreenshotReminderDialog(
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
-    val suggestions = remember(screenshot.ocrText) { DateSuggester.suggest(screenshot.ocrText) }
+    val suggestions = remember(screenshot.ocrText, screenshot.takenAt, screenshot.importedAt) {
+        val reference = Instant.ofEpochMilli(screenshot.takenAt ?: screenshot.importedAt)
+            .atZone(ZoneId.systemDefault()).toLocalDate()
+        DateSuggester.suggest(screenshot.ocrText, reference = reference)
+    }
     var pendingSave by remember { mutableStateOf<(() -> Unit)?>(null) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
