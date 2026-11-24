@@ -1,43 +1,22 @@
 package com.screenshotbrain.ui.detail
 
-import android.content.ClipData
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.ContentCopy
-import androidx.compose.material.icons.outlined.CreateNewFolder
 import androidx.compose.material.icons.outlined.Alarm
+import androidx.compose.material.icons.outlined.CreateNewFolder
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -53,18 +32,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
-import com.screenshotbrain.database.ScreenshotEntity
-import java.text.DateFormat
-import java.util.Date
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,6 +44,8 @@ import kotlinx.coroutines.launch
 fun DetailScreen(onBack: () -> Unit, viewModel: DetailViewModel = viewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
+    val allCollections by viewModel.allCollections.collectAsStateWithLifecycle()
+    val memberOf by viewModel.memberOf.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -80,8 +54,6 @@ fun DetailScreen(onBack: () -> Unit, viewModel: DetailViewModel = viewModel()) {
     var showEdit by remember { mutableStateOf(false) }
     var showCollections by remember { mutableStateOf(false) }
     var showReminder by remember { mutableStateOf(false) }
-    val allCollections by viewModel.allCollections.collectAsStateWithLifecycle()
-    val memberOf by viewModel.memberOf.collectAsStateWithLifecycle()
 
     LaunchedEffect(message) {
         message?.let {
@@ -106,18 +78,6 @@ fun DetailScreen(onBack: () -> Unit, viewModel: DetailViewModel = viewModel()) {
                 actions = {
                     if (item != null) {
                         IconButton(onClick = { viewModel.toggleFavourite(item) }) {
-                                                     IconButton(onClick = { showReminder = true }) {
-                            Icon(
-                                Icons.Outlined.Alarm,
-                                contentDescription = "Set reminder"
-                            )
-                                                     }                       
-                            IconButton(onClick = { showCollections = true }) {
-                            Icon(
-                                Icons.Outlined.CreateNewFolder,
-                                contentDescription = "Add to collection"
-                            )
-                                                    }
                             Icon(
                                 imageVector = if (item.isFavourite) {
                                     Icons.Outlined.Favorite
@@ -125,6 +85,15 @@ fun DetailScreen(onBack: () -> Unit, viewModel: DetailViewModel = viewModel()) {
                                     Icons.Outlined.FavoriteBorder
                                 },
                                 contentDescription = "Toggle favourite"
+                            )
+                        }
+                        IconButton(onClick = { showReminder = true }) {
+                            Icon(Icons.Outlined.Alarm, contentDescription = "Set reminder")
+                        }
+                        IconButton(onClick = { showCollections = true }) {
+                            Icon(
+                                Icons.Outlined.CreateNewFolder,
+                                contentDescription = "Add to collection"
                             )
                         }
                         IconButton(onClick = { showDelete = true }) {
@@ -164,7 +133,8 @@ fun DetailScreen(onBack: () -> Unit, viewModel: DetailViewModel = viewModel()) {
                     clipboard.setText(AnnotatedString(current.item.ocrText.orEmpty()))
                     scope.launch { snackbarHostState.showSnackbar("Text copied") }
                 },
-                onShareText = { shareText(context, current.item.ocrText.orEmpty()) }
+                onShareText = { shareText(context, current.item.ocrText.orEmpty()) },
+                onSetReminder = { showReminder = true }
             )
         }
     }
@@ -191,16 +161,25 @@ fun DetailScreen(onBack: () -> Unit, viewModel: DetailViewModel = viewModel()) {
         )
     }
 
-        if (showCollections) {
+    if (showCollections) {
         AddToCollectionDialog(
             collections = allCollections,
             memberOf = memberOf,
             onToggle = { collectionId, add -> viewModel.setInCollection(collectionId, add) },
             onDismiss = { showCollections = false }
         )
-        }
+    }
+
+    if (showReminder && item != null) {
+        ScreenshotReminderDialog(
+            screenshot = item,
+            onSave = { title, note, at -> viewModel.addReminder(title, note, at) },
+            onDismiss = { showReminder = false }
+        )
+    }
+
     if (showEdit && item != null) {
-                EditDetailsDialog(
+        EditDetailsDialog(
             initialTitle = item.title.orEmpty(),
             initialCategory = item.category ?: "Other",
             initialNote = item.note.orEmpty(),
@@ -212,126 +191,4 @@ fun DetailScreen(onBack: () -> Unit, viewModel: DetailViewModel = viewModel()) {
             }
         )
     }
-}
-
-@Composable
-private fun DetailContent(
-    item: ScreenshotEntity,
-    padding: PaddingValues,
-    onEdit: () -> Unit,
-    onShareImage: () -> Unit,
-    onCopyText: () -> Unit,
-    onShareText: () -> Unit
-) {
-    val dateText = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
-        .format(Date(item.takenAt ?: item.importedAt))
-    val hasText = !item.ocrText.isNullOrBlank()
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(padding)
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        AsyncImage(
-            model = item.uri,
-            contentDescription = item.fileName,
-            contentScale = ContentScale.Fit,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max = 420.dp)
-                .clip(RoundedCornerShape(16.dp))
-        )
-
-        Text(
-            text = item.title ?: item.fileName,
-            style = MaterialTheme.typography.headlineSmall
-        )
-        Text(
-            text = listOfNotNull(item.category, item.price, dateText).joinToString(" · "),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        if (!item.keywords.isNullOrBlank()) {
-            Text(
-                text = "Keywords: " + item.keywords.replace(",", ", "),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        if (!item.note.isNullOrBlank()) {
-            Text(text = "Note: " + item.note, style = MaterialTheme.typography.bodyMedium)
-        }
-
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = onEdit, modifier = Modifier.weight(1f)) {
-                Icon(Icons.Outlined.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(6.dp))
-                Text("Edit")
-            }
-            OutlinedButton(onClick = onShareImage, modifier = Modifier.weight(1f)) {
-                Icon(Icons.Outlined.Share, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(6.dp))
-                Text("Share image")
-            }
-        }
-
-        Text(text = "Extracted text", style = MaterialTheme.typography.titleMedium)
-
-        when {
-            item.ocrStatus == 0 -> Text("Still reading text…")
-            !hasText -> Text("No text was found in this screenshot.")
-            else -> {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(onClick = onCopyText, modifier = Modifier.weight(1f)) {
-                        Icon(
-                            Icons.Outlined.ContentCopy,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        Text("Copy text")
-                    }
-                    OutlinedButton(onClick = onShareText, modifier = Modifier.weight(1f)) {
-                        Icon(
-                            Icons.Outlined.Share,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        Text("Share text")
-                    }
-                }
-                SelectionContainer {
-                    Text(text = item.ocrText.orEmpty(), style = MaterialTheme.typography.bodyMedium)
-                }
-            }
-        }
-    }
-}
-
-private fun shareImage(context: Context, uriString: String): Boolean {
-    return try {
-        val uri = Uri.parse(uriString)
-        val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "image/*"
-            putExtra(Intent.EXTRA_STREAM, uri)
-            clipData = ClipData.newRawUri("", uri)
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
-        context.startActivity(Intent.createChooser(intent, "Share screenshot"))
-        true
-    } catch (e: Exception) {
-        false
-    }
-}
-
-private fun shareText(context: Context, text: String) {
-    val intent = Intent(Intent.ACTION_SEND).apply {
-        type = "text/plain"
-        putExtra(Intent.EXTRA_TEXT, text)
-    }
-    context.startActivity(Intent.createChooser(intent, "Share text"))
 }
