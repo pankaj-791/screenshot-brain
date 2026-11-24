@@ -1,7 +1,9 @@
 package com.screenshotbrain.domain
 
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalAdjusters
 import java.util.Locale
 
 data class DateSuggestion(
@@ -36,8 +38,21 @@ object DateSuggester {
         RegexOption.IGNORE_CASE
     )
 
-    /** Dates found in the text that are today or later. Never schedules anything. */
-    fun suggest(text: String?, today: LocalDate = LocalDate.now()): List<DateSuggestion> {
+    private val weekdayRegex = Regex(
+        "\\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\\b",
+        RegexOption.IGNORE_CASE
+    )
+
+    /**
+     * Dates found in the text that are today or later. Never schedules anything.
+     * A weekday name like "Monday" means the next such day on or after [reference]
+     * (the day the screenshot was taken), and is only suggested if it is not in the past.
+     */
+    fun suggest(
+        text: String?,
+        today: LocalDate = LocalDate.now(),
+        reference: LocalDate = today
+    ): List<DateSuggestion> {
         if (text.isNullOrBlank()) return emptyList()
 
         val found = LinkedHashMap<LocalDate, String>()
@@ -66,8 +81,12 @@ object DateSuggester {
             val year = m.groupValues[3].toIntOrNull() ?: today.year
             add(build(year, monthOf(m.groupValues[1]), m.groupValues[2].toInt()), m.value)
         }
+        for (m in weekdayRegex.findAll(text)) {
+            val day = DayOfWeek.valueOf(m.value.uppercase(Locale.ROOT))
+            add(reference.with(TemporalAdjusters.nextOrSame(day)), m.value)
+        }
 
-        val formatter = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.getDefault())
+        val formatter = DateTimeFormatter.ofPattern("EEE, d MMM yyyy", Locale.getDefault())
         return found.entries
             .sortedBy { it.key }
             .take(MAX_SUGGESTIONS)
