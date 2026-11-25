@@ -50,9 +50,12 @@ interface ScreenshotDao {
     @Query("UPDATE screenshots SET title = :title, category = :category, note = :note, price = :price WHERE id = :id")
     suspend fun updateDetails(id: Long, title: String?, category: String?, note: String?, price: String?)
 
+    @Query("UPDATE screenshots SET note = :note WHERE id = :id")
+    suspend fun updateNote(id: Long, note: String?)
+
     @Query("DELETE FROM screenshots WHERE id = :id")
     suspend fun deleteById(id: Long)
-    
+
     @Query("SELECT * FROM screenshots WHERE ocrText IS NOT NULL")
     suspend fun getAllWithText(): List<ScreenshotEntity>
 
