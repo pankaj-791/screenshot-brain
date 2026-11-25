@@ -31,6 +31,7 @@ import com.screenshotbrain.ui.brain.BrainScreen
 import com.screenshotbrain.ui.collections.AddScreenshotsScreen
 import com.screenshotbrain.ui.collections.CollectionDetailScreen
 import com.screenshotbrain.ui.collections.CollectionsScreen
+import com.screenshotbrain.ui.compare.CompareScreen
 import com.screenshotbrain.ui.detail.DetailScreen
 import com.screenshotbrain.ui.home.HomeScreen
 import com.screenshotbrain.ui.library.LibraryRequests
@@ -41,8 +42,11 @@ private const val DETAIL_ROUTE = "detail/{id}"
 private const val COLLECTION_ROUTE = "collection/{id}"
 private const val ADD_ROUTE = "collection/{id}/add"
 private const val REMINDERS_ROUTE = "reminders"
+private const val COMPARE_ROUTE = "compare"
 
-private val fullScreenRoutes = setOf(DETAIL_ROUTE, COLLECTION_ROUTE, ADD_ROUTE, REMINDERS_ROUTE)
+private val fullScreenRoutes = setOf(
+    DETAIL_ROUTE, COLLECTION_ROUTE, ADD_ROUTE, REMINDERS_ROUTE, COMPARE_ROUTE
+)
 
 private enum class Destination(
     val route: String,
@@ -109,7 +113,8 @@ fun ScreenshotBrainApp() {
                             },
                             onOpenLibrary = { goToTab(Destination.Library.route) },
                             onOpenReminders = { navController.navigate(REMINDERS_ROUTE) },
-                            onOpenScreenshot = { id -> openScreenshot(id) }
+                            onOpenScreenshot = { id -> openScreenshot(id) },
+                            onOpenCompare = { navController.navigate(COMPARE_ROUTE) }
                         )
                         Destination.Library -> LibraryScreen(
                             onOpenScreenshot = { id -> openScreenshot(id) }
@@ -151,6 +156,9 @@ fun ScreenshotBrainApp() {
                     onBack = { navController.popBackStack() },
                     onOpenScreenshot = { id -> openScreenshot(id) }
                 )
+            }
+            composable(COMPARE_ROUTE) {
+                CompareScreen(onBack = { navController.popBackStack() })
             }
         }
     }
