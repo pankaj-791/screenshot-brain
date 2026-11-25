@@ -21,6 +21,7 @@ import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.outlined.AddPhotoAlternate
 import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.CompareArrows
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -49,6 +50,7 @@ fun HomeScreen(
     onOpenLibrary: () -> Unit,
     onOpenReminders: () -> Unit,
     onOpenScreenshot: (Long) -> Unit,
+    onOpenCompare: () -> Unit = {},
     viewModel: HomeViewModel = viewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -138,14 +140,25 @@ fun HomeScreen(
             }
 
             item {
-                QuickActionButton(
-                    label = "Reminders",
-                    icon = Icons.Outlined.Alarm,
-                    onClick = onOpenReminders,
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
-                )
+                ) {
+                    QuickActionButton(
+                        label = "Reminders",
+                        icon = Icons.Outlined.Alarm,
+                        onClick = onOpenReminders,
+                        modifier = Modifier.weight(1f)
+                    )
+                    QuickActionButton(
+                        label = "Compare",
+                        icon = Icons.Outlined.CompareArrows,
+                        onClick = onOpenCompare,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
 
             item {
