@@ -4,6 +4,7 @@ import com.screenshotbrain.database.ScreenshotEntity
 
 data class ComparisonRow(
     val id: Long,
+    val uri: String,
     val name: String,
     val price: String?,
     val priceValue: Double?,
@@ -75,6 +76,7 @@ object ComparisonBuilder {
 
         return ComparisonRow(
             id = item.id,
+            uri = item.uri,
             name = item.title ?: item.fileName,
             price = price,
             priceValue = price?.let { rupeeValue(it) },
