@@ -25,9 +25,8 @@ jobs:
 
       - name: Use the fixed debug signing key
         run: |
-          mkdir -p ~/.android
-          tr -d ' \r\n' < ci/debug.keystore.txt | base64 -d > ~/.android/debug.keystore
-          echo "f6819fb3264369fc72ec1223fb54b778798e1dd7cf5f208eda475f24bd070dc3  $HOME/.android/debug.keystore" | sha256sum -c -
+          tr -d ' \r\n' < ci/debug.keystore.txt | base64 -d > ci/debug.keystore
+          echo "f6819fb3264369fc72ec1223fb54b778798e1dd7cf5f208eda475f24bd070dc3  ci/debug.keystore" | sha256sum -c -
 
       - name: Build debug APK
         run: gradle assembleDebug --stacktrace
