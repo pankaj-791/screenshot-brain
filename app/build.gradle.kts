@@ -72,5 +72,7 @@ dependencies {
     implementation("com.google.mlkit:text-recognition:16.0.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
 
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+
     debugImplementation("androidx.compose.ui:ui-tooling")
 }
