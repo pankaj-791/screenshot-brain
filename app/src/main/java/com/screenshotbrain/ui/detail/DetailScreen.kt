@@ -138,7 +138,8 @@ fun DetailScreen(
                     scope.launch { snackbarHostState.showSnackbar("Text copied") }
                 },
                 onShareText = { shareText(context, current.item.ocrText.orEmpty()) },
-                onSetReminder = { showReminder = true }
+                onSetReminder = { showReminder = true },
+                onOpenNotes = onOpenNotes
             )
         }
     }
