@@ -1,7 +1,5 @@
 package com.screenshotbrain.navigation
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
@@ -16,7 +14,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -38,6 +35,7 @@ import com.screenshotbrain.ui.library.LibraryRequests
 import com.screenshotbrain.ui.library.LibraryScreen
 import com.screenshotbrain.ui.notes.NotesScreen
 import com.screenshotbrain.ui.reminders.RemindersScreen
+import com.screenshotbrain.ui.settings.SettingsScreen
 
 private const val DETAIL_ROUTE = "detail/{id}"
 private const val NOTES_ROUTE = "notes/{id}"
@@ -127,7 +125,7 @@ fun ScreenshotBrainApp() {
                         Destination.Collections -> CollectionsScreen(
                             onOpenCollection = { id -> navController.navigate("collection/$id") }
                         )
-                        else -> PlaceholderScreen(destination.label)
+                        Destination.Settings -> SettingsScreen()
                     }
                 }
             }
@@ -173,12 +171,5 @@ fun ScreenshotBrainApp() {
                 CompareScreen(onBack = { navController.popBackStack() })
             }
         }
-    }
-}
-
-@Composable
-private fun PlaceholderScreen(name: String) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = name)
     }
 }
