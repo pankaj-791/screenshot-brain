@@ -32,6 +32,21 @@ jobs:
       - name: Build debug APK
         run: gradle assembleDebug --stacktrace
 
+      - name: Check the APK is signed with the fixed key
+        run: |
+          APKSIGNER=$(ls $ANDROID_HOME/build-tools/*/apksigner 2>/dev/null | sort -V | tail -1)
+          if [ -z "$APKSIGNER" ]; then
+            echo "WARNING: apksigner not found, could not check the signing key."
+            exit 0
+          fi
+          "$APKSIGNER" verify --print-certs app/build/outputs/apk/debug/app-debug.apk | tee signer.txt
+          if grep -qi "SHA-256 digest: 3a982a24525bbba0194523d337701b0e78fd1636860271c17da5860f5268a5fa" signer.txt; then
+            echo "SIGNING KEY OK"
+          else
+            echo "WRONG SIGNING KEY: this APK will not update over other builds."
+            exit 1
+          fi
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
