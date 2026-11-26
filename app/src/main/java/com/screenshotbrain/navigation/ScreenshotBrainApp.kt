@@ -36,16 +36,18 @@ import com.screenshotbrain.ui.detail.DetailScreen
 import com.screenshotbrain.ui.home.HomeScreen
 import com.screenshotbrain.ui.library.LibraryRequests
 import com.screenshotbrain.ui.library.LibraryScreen
+import com.screenshotbrain.ui.notes.NotesScreen
 import com.screenshotbrain.ui.reminders.RemindersScreen
 
 private const val DETAIL_ROUTE = "detail/{id}"
+private const val NOTES_ROUTE = "notes/{id}"
 private const val COLLECTION_ROUTE = "collection/{id}"
 private const val ADD_ROUTE = "collection/{id}/add"
 private const val REMINDERS_ROUTE = "reminders"
 private const val COMPARE_ROUTE = "compare"
 
 private val fullScreenRoutes = setOf(
-    DETAIL_ROUTE, COLLECTION_ROUTE, ADD_ROUTE, REMINDERS_ROUTE, COMPARE_ROUTE
+    DETAIL_ROUTE, NOTES_ROUTE, COLLECTION_ROUTE, ADD_ROUTE, REMINDERS_ROUTE, COMPARE_ROUTE
 )
 
 private enum class Destination(
@@ -132,8 +134,18 @@ fun ScreenshotBrainApp() {
             composable(
                 route = DETAIL_ROUTE,
                 arguments = listOf(navArgument("id") { type = NavType.LongType })
+            ) { entry ->
+                val id = entry.arguments?.getLong("id") ?: -1L
+                DetailScreen(
+                    onBack = { navController.popBackStack() },
+                    onOpenNotes = { navController.navigate("notes/$id") }
+                )
+            }
+            composable(
+                route = NOTES_ROUTE,
+                arguments = listOf(navArgument("id") { type = NavType.LongType })
             ) {
-                DetailScreen(onBack = { navController.popBackStack() })
+                NotesScreen(onBack = { navController.popBackStack() })
             }
             composable(
                 route = COLLECTION_ROUTE,
