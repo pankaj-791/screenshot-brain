@@ -41,7 +41,11 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailScreen(onBack: () -> Unit, viewModel: DetailViewModel = viewModel()) {
+fun DetailScreen(
+    onBack: () -> Unit,
+    onOpenNotes: () -> Unit = {},
+    viewModel: DetailViewModel = viewModel()
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
     val allCollections by viewModel.allCollections.collectAsStateWithLifecycle()
