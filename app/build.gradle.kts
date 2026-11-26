@@ -16,6 +16,18 @@ android {
         versionName = "0.1.0"
     }
 
+    signingConfigs {
+        getByName("debug") {
+            val fixedKey = rootProject.file("ci/debug.keystore")
+            if (fixedKey.exists()) {
+                storeFile = fixedKey
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
