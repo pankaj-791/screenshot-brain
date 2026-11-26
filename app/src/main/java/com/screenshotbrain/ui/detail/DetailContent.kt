@@ -22,6 +22,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.Button
@@ -53,7 +54,8 @@ fun DetailContent(
     onShareImage: () -> Unit,
     onCopyText: () -> Unit,
     onShareText: () -> Unit,
-    onSetReminder: () -> Unit
+    onSetReminder: () -> Unit,
+    onOpenNotes: () -> Unit = {}
 ) {
     val dateText = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
         .format(Date(item.takenAt ?: item.importedAt))
@@ -99,7 +101,10 @@ fun DetailContent(
             )
         }
         if (!item.note.isNullOrBlank()) {
-            Text(text = "Note: " + item.note, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = "Note: " + item.note.take(300) + if (item.note.length > 300) "…" else "",
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
 
         if (item.ocrStatus != 0 && suggestions.isNotEmpty()) {
@@ -151,6 +156,12 @@ fun DetailContent(
                 Spacer(Modifier.width(6.dp))
                 Text("Share image")
             }
+        }
+
+        OutlinedButton(onClick = onOpenNotes, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Outlined.Description, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(6.dp))
+            Text(if (item.note.isNullOrBlank()) "Notes and checklist" else "Open note")
         }
 
         Text(text = "Extracted text", style = MaterialTheme.typography.titleMedium)
