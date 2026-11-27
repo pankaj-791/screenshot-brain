@@ -21,6 +21,7 @@ import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.outlined.AddPhotoAlternate
 import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.CleaningServices
 import androidx.compose.material.icons.outlined.CompareArrows
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -51,6 +52,7 @@ fun HomeScreen(
     onOpenReminders: () -> Unit,
     onOpenScreenshot: (Long) -> Unit,
     onOpenCompare: () -> Unit = {},
+    onOpenCleanup: () -> Unit = {},
     viewModel: HomeViewModel = viewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -159,6 +161,17 @@ fun HomeScreen(
                         modifier = Modifier.weight(1f)
                     )
                 }
+            }
+
+            item {
+                QuickActionButton(
+                    label = "Smart cleanup",
+                    icon = Icons.Outlined.CleaningServices,
+                    onClick = onOpenCleanup,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                )
             }
 
             item {
