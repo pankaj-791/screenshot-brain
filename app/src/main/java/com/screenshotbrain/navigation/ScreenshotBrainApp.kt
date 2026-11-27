@@ -25,6 +25,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.screenshotbrain.ui.brain.BrainRequests
 import com.screenshotbrain.ui.brain.BrainScreen
+import com.screenshotbrain.ui.cleanup.CleanupScreen
 import com.screenshotbrain.ui.collections.AddScreenshotsScreen
 import com.screenshotbrain.ui.collections.CollectionDetailScreen
 import com.screenshotbrain.ui.collections.CollectionsScreen
@@ -43,9 +44,11 @@ private const val COLLECTION_ROUTE = "collection/{id}"
 private const val ADD_ROUTE = "collection/{id}/add"
 private const val REMINDERS_ROUTE = "reminders"
 private const val COMPARE_ROUTE = "compare"
+private const val CLEANUP_ROUTE = "cleanup"
 
 private val fullScreenRoutes = setOf(
-    DETAIL_ROUTE, NOTES_ROUTE, COLLECTION_ROUTE, ADD_ROUTE, REMINDERS_ROUTE, COMPARE_ROUTE
+    DETAIL_ROUTE, NOTES_ROUTE, COLLECTION_ROUTE, ADD_ROUTE,
+    REMINDERS_ROUTE, COMPARE_ROUTE, CLEANUP_ROUTE
 )
 
 private enum class Destination(
@@ -114,7 +117,8 @@ fun ScreenshotBrainApp() {
                             onOpenLibrary = { goToTab(Destination.Library.route) },
                             onOpenReminders = { navController.navigate(REMINDERS_ROUTE) },
                             onOpenScreenshot = { id -> openScreenshot(id) },
-                            onOpenCompare = { navController.navigate(COMPARE_ROUTE) }
+                            onOpenCompare = { navController.navigate(COMPARE_ROUTE) },
+                            onOpenCleanup = { navController.navigate(CLEANUP_ROUTE) }
                         )
                         Destination.Library -> LibraryScreen(
                             onOpenScreenshot = { id -> openScreenshot(id) }
@@ -169,6 +173,12 @@ fun ScreenshotBrainApp() {
             }
             composable(COMPARE_ROUTE) {
                 CompareScreen(onBack = { navController.popBackStack() })
+            }
+            composable(CLEANUP_ROUTE) {
+                CleanupScreen(
+                    onBack = { navController.popBackStack() },
+                    onOpenScreenshot = { id -> openScreenshot(id) }
+                )
             }
         }
     }
