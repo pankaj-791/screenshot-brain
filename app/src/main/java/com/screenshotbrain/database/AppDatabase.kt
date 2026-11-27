@@ -14,7 +14,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         CollectionScreenshotEntity::class,
         ReminderEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -24,6 +24,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun collectionDao(): CollectionDao
 
     abstract fun reminderDao(): ReminderDao
+
+    abstract fun cleanupDao(): CleanupDao
 
     companion object {
         @Volatile
@@ -103,6 +105,17 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE screenshots ADD COLUMN contentHash TEXT")
+                db.execSQL("ALTER TABLE screenshots ADD COLUMN visualHash INTEGER")
+                db.execSQL("ALTER TABLE screenshots ADD COLUMN sharpness REAL")
+                db.execSQL(
+                    "ALTER TABLE screenshots ADD COLUMN cleanupStatus INTEGER NOT NULL DEFAULT 0"
+                )
+            }
+        }
+
         fun get(context: Context): AppDatabase {
             return instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
@@ -114,7 +127,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_1_2,
                         MIGRATION_2_3,
                         MIGRATION_3_4,
-                        MIGRATION_4_5
+                        MIGRATION_4_5,
+                        MIGRATION_5_6
                     )
                     .build()
                     .also { instance = it }
